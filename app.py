@@ -88,12 +88,24 @@ if P < 5000:
 
 # ---------- Goal Analysis ----------
 st.subheader("🎯 Goal Analysis")
-goal = 100000
 final_val = calculate_growth(P, rates[risk], T)[-1]
+
+st.subheader("🎯 Goal Analysis")
+
 if final_val >= goal:
-    st.success(f"You can achieve ₹{goal}")
+    st.success(f"✅ You can achieve your goal of ₹{goal}")
 else:
-    st.error(f"You fall short by ₹{int(goal - final_val)}")
+    shortfall = goal - final_val
+    st.error(f"❌ You fall short by ₹{int(shortfall)}")
+    
+    # Extra intelligence (VERY IMPRESSIVE)
+    required_investment = goal / ((1 + rates[risk]) ** T)
+    st.info(f"💡 To achieve this goal, you should invest approximately ₹{int(required_investment)} today")
+    import math
+
+if P > 0 and goal > P:
+    time_needed = math.log(goal / P) / math.log(1 + rates[risk])
+    st.info(f"⏳ Time required to reach goal: {round(time_needed, 1)} years")
 
 # ---------- SIP Mode ----------
 st.subheader("🔄 SIP Calculator")
