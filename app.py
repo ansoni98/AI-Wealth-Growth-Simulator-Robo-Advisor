@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+import math
 
 st.set_page_config(page_title="AI Wealth Simulator", layout="wide")
 
@@ -15,17 +16,18 @@ st.markdown("""
 
 st.title("💰 AI Wealth Growth Simulator + Robo Advisor")
 
-# ---------- Sidebar ----------
+# ---------- Sidebar Inputs ----------
 st.sidebar.header("Input Parameters")
 P = st.sidebar.number_input("Investment Amount (₹)", value=10000)
 T = st.sidebar.slider("Time Period (Years)", 1, 20, 5)
 risk = st.sidebar.selectbox("Risk Level", ["Low", "Medium", "High"])
+goal = st.sidebar.number_input("🎯 Target Goal (₹)", value=100000)
 
 # ---------- Rates ----------
 rates = {"Low": 0.05, "Medium": 0.10, "High": 0.15}
 inflation = 0.06
 
-# ---------- Growth Calculation ----------
+# ---------- Growth Function ----------
 def calculate_growth(P, r, T):
     values = []
     for t in range(T + 1):
@@ -35,13 +37,15 @@ def calculate_growth(P, r, T):
 low = calculate_growth(P, rates["Low"], T)
 med = calculate_growth(P, rates["Medium"], T)
 high = calculate_growth(P, rates["High"], T)
+selected_growth = calculate_growth(P, rates[risk], T)
 
 # ---------- KPI ----------
 st.subheader("📊 Key Metrics")
 col1, col2, col3 = st.columns(3)
-col1.metric("Final Value (Selected)", f"₹{int(calculate_growth(P, rates[risk], T)[-1])}")
-col2.metric("Total Profit", f"₹{int(calculate_growth(P, rates[risk], T)[-1] - P)}")
-col3.metric("Growth %", f"{int(((calculate_growth(P, rates[risk], T)[-1] / P) - 1) * 100)}%")
+final_value = selected_growth[-1]
+col1.metric("Final Value", f"₹{int(final_value)}")
+col2.metric("Total Profit", f"₹{int(final_value - P)}")
+col3.metric("Growth %", f"{int(((final_value / P) - 1) * 100)}%")
 
 # ---------- Chart ----------
 st.subheader("📈 Growth Comparison")
@@ -77,7 +81,7 @@ fig2.add_trace(go.Scatter(x=df['Year'], y=df['Bonds'], name='Bonds'))
 fig2.add_trace(go.Scatter(x=df['Year'], y=df['Gold'], name='Gold'))
 st.plotly_chart(fig2, use_container_width=True)
 
-# ---------- Insights ----------
+# ---------- AI Insights ----------
 st.subheader("🧠 AI Insights")
 if T > 5:
     st.success("Long-term investing increases returns significantly.")
@@ -88,26 +92,22 @@ if P < 5000:
 
 # ---------- Goal Analysis ----------
 st.subheader("🎯 Goal Analysis")
-final_val = calculate_growth(P, rates[risk], T)[-1]
 
-st.subheader("🎯 Goal Analysis")
-
-if final_val >= goal:
+if final_value >= goal:
     st.success(f"✅ You can achieve your goal of ₹{goal}")
 else:
-    shortfall = goal - final_val
+    shortfall = goal - final_value
     st.error(f"❌ You fall short by ₹{int(shortfall)}")
     
-    # Extra intelligence (VERY IMPRESSIVE)
     required_investment = goal / ((1 + rates[risk]) ** T)
-    st.info(f"💡 To achieve this goal, you should invest approximately ₹{int(required_investment)} today")
-    import math
+    st.info(f"💡 Required Investment: ₹{int(required_investment)}")
 
+# ---------- Time to Reach Goal ----------
 if P > 0 and goal > P:
     time_needed = math.log(goal / P) / math.log(1 + rates[risk])
     st.info(f"⏳ Time required to reach goal: {round(time_needed, 1)} years")
 
-# ---------- SIP Mode ----------
+# ---------- SIP Calculator ----------
 st.subheader("🔄 SIP Calculator")
 monthly = P / 12
 sip_value = 0
@@ -117,4 +117,3 @@ st.write(f"Future Value (SIP): ₹{int(sip_value)}")
 
 st.markdown("---")
 st.caption("AI FinTech Project - Wealth Simulator with Robo Advisory")
-
