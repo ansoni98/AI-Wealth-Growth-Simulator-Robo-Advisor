@@ -70,9 +70,26 @@ sip = goal*r/((1+r)**months-1) if r>0 else goal/months
 st.metric("Monthly SIP Needed", f"₹{int(sip)}")
 
 # ---------- Portfolio ----------
-st.subheader("💼 Portfolio Performance")
+st.subheader("💼 Portfolio Performance & Allocation")
+
 portfolio = pd.DataFrame({"Year":list(range(T+1)),"Value":values})
 st.line_chart(portfolio.set_index("Year"))
+
+# Dynamic Allocation Table (NEW)
+alloc_data = []
+for year in range(1, T+1):
+    if year < T * 0.3:
+        stocks, bonds, gold = 70, 20, 10
+    elif year < T * 0.7:
+        stocks, bonds, gold = 50, 30, 20
+    else:
+        stocks, bonds, gold = 30, 50, 20
+    alloc_data.append([year, stocks, bonds, gold])
+
+alloc_df = pd.DataFrame(alloc_data, columns=["Year","Stocks (%)","Bonds (%)","Gold (%)"])
+
+st.subheader("📊 Year-wise Portfolio Allocation")
+st.dataframe(alloc_df, use_container_width=True)
 
 # ---------- Monte Carlo ----------
 st.subheader("🎲 Monte Carlo Simulation")
